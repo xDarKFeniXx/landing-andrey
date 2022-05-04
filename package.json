@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/xDarKFeniXx/landing-andrey/issues"
   },
-  "homepage": "https://github.com/xDarKFeniXx/landing-andrey#readme"
+  "homepage": "https://github.com/xDarKFeniXx/landing-andrey#readme",
+  "devDependencies": {
+    "gulp": "^4.0.2"
+  }
 }
