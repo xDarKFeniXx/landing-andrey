@@ -1,13 +1,25 @@
-function defaultTask(cb) {
-    // place code for your default task here
-    cb();
-  }
-  
-  exports.default = defaultTask 
-  let project_folder = "dist";
-  let source_folder = "#src";
+const { notify } = require('browser-sync');
+const {src,dest} = require('gulp'); // что такое require и почему gulp в одинарных кавычках
+  // Переменные src и dest создаются для помощи написания сценария. В эти переменные и присваивается сам Галп
+  const gulp = require('gulp'); //создаем переменную Галп для каких то отдельных задач (каких? Зачем?) Список переменных может быть увеличин, по мере установки плагинов и дополнений.
+  // Далее можно добавить плагин по синхронизации браузера. Добавление плагина идет через терминал: npm i browser-sync --save-dev
+  // Теперь назначим плагину переменную
+const browsersync = require("browser-sync").create();//require выполняется в той же строчке кода в которой прописан. import-from запускается только в начале файла
+const fileinclude = require("gulp-file-include");
+const del = require("del");
+const scss = require("gulp-sass")(require('sass'));
+const autoprefixer = require ("gulp-autoprefixer");
+const group_media = require ("gulp-group-css-media-queries");
+const clean_css = require("gulp-clean-css")
+const rename = require("gulp-rename")
+const uglify = require ("gulp-uglify-es").default
+const imagemin = require("gulp-imagemin")
+// Создаем отдельную функцию чтобы запускать обновление браузера
 
-  let path ={
+  const project_folder = "dist";
+  const source_folder = "#src";
+
+  const path ={
     //пути вывода, пути куда Галп будет выгружать готовые файлы
       build:{
        //Первый путь к html файлу 
@@ -34,25 +46,6 @@ function defaultTask(cb) {
       },
       clean:"./" + project_folder + "/" //объект clean будет отвечать за постоянное удаление папки каждый раз, как мы будет запускать Галп (Зачем это делать?)
   }
-const { notify } = require('browser-sync');
-  let {src,dest} = require('gulp'); // что такое require и почему gulp в одинарных кавычках
-  // Переменные src и dest создаются для помощи написания сценария. В эти переменные и присваивается сам Галп
-  let gulp = require('gulp'); //создаем переменную Галп для каких то отдельных задач (каких? Зачем?) Список переменных может быть увеличин, по мере установки плагинов и дополнений.
-  // Далее можно добавить плагин по синхронизации браузера. Добавление плагина идет через терминал: npm i browser-sync --save-dev
-  // Теперь назначим плагину переменную
-
-  let browsersync = require("browser-sync").create();
-  let fileinclude = require("gulp-file-include");
-  let del = require("del");
-  let scss = require("gulp-sass")(require('sass'));
-  let autoprefixer = require ("gulp-autoprefixer");
-  let group_media = require ("gulp-group-css-media-queries");
-  let clean_css = require("gulp-clean-css")
-  let rename = require("gulp-rename")
-  let uglify = require ("gulp-uglify-es").default
-  let imagemin = require("gulp-imagemin")
-
-  // Создаем отдельную функцию чтобы запускать обновление браузера
   function browserSync(params) {
     browsersync.init({
       server: {
