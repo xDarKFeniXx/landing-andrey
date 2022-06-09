@@ -49,6 +49,8 @@ const { notify } = require('browser-sync');
   let group_media = require ("gulp-group-css-media-queries");
   let clean_css = require("gulp-clean-css")
   let rename = require("gulp-rename")
+  let uglify = require ("gulp-uglify-es").default
+  let imagemin = require("gulp-imagemin")
 
   // Создаем отдельную функцию чтобы запускать обновление браузера
   function browserSync(params) {
@@ -75,8 +77,31 @@ const { notify } = require('browser-sync');
     return src(path.src.js)
     .pipe(fileinclude())
     .pipe(dest(path.build.js))
+    .pipe(
+      uglify()
+    )
+    .pipe (
+      rename({
+        extname:".min.js"
+      })
+    )
+    .pipe(dest(path.build.js))
     .pipe(browsersync.stream())
  
+  }
+
+  function images () {
+    return src(path.src.img)
+    .pipe (
+      imagemin({
+        progressive:true,
+        svgoPlugins:[{removeViewBox: false}],
+        interlaced: true,
+        optimizationLevel: 3 //0 to 7
+      })
+    )
+    .pipe(dest(path.build.img))
+    .pipe(browsersync.stream())
   }
 
 
@@ -109,6 +134,7 @@ const { notify } = require('browser-sync');
     gulp.watch([path.watch.html],html)
     gulp.watch([path.watch.css],css)
     gulp.watch([path.watch.js],js)
+    gulp.watch([path.watch.img],images)
   }
   //создаем новую функцию для того чтобы изменения были видны в режиме реального времени
 
@@ -118,13 +144,14 @@ const { notify } = require('browser-sync');
   }
   //создадим функцию которая будет удалять папку (какую?) судя по всему папку dist
 
-  let build = gulp.series(clean,gulp.parallel(js, css, html))
+  let build = gulp.series(clean,gulp.parallel(js, css, html, images))
   // потом включаем build в переменную watch
   //затем нужно подружить её с gulp через exports
   // добавляем (подключаем) нашу функцию в bild
 
   let watch=gulp.parallel(build,watchFiles,browserSync);
 
+  exports.images = images;
   exports.js = js;
   exports.css = css;
   exports.html = html;
