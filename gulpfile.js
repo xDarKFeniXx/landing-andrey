@@ -44,6 +44,11 @@ const { notify } = require('browser-sync');
   let browsersync = require("browser-sync").create();
   let fileinclude = require("gulp-file-include");
   let del = require("del");
+  let scss = require("gulp-sass")(require('sass'));
+  let autoprefixer = require ("gulp-autoprefixer");
+  let group_media = require ("gulp-group-css-media-queries");
+  let clean_css = require("gulp-clean-css")
+  let rename = require("gulp-rename")
 
   // Создаем отдельную функцию чтобы запускать обновление браузера
   function browserSync(params) {
@@ -55,27 +60,73 @@ const { notify } = require('browser-sync');
       notify: false
     })
   }
+
   function html () {
     return src(path.src.html)
     .pipe(fileinclude())
     //делаем для того чтобы gulp собирал наши файлы в один
     .pipe(dest(path.build.html))
   //pipe это функция в которой мы пишем команды для gulp
-  .pipe(browsersync.stream())
+    .pipe(browsersync.stream())
   //для обновления страницы
   }
   //фунция готова и теперь её нужно подружить с gulp и включить в процесс выполнения
+  function js () {
+    return src(path.src.js)
+    .pipe(fileinclude())
+    .pipe(dest(path.build.js))
+    .pipe(browsersync.stream())
+ 
+  }
+
+
+  function css () {
+    return src(path.src.css)
+    //.pipe(fileinclude()) этот удаляем, он не нужен, т.к предпроцессор Css сам умеет подключать
+    .pipe(
+      scss({
+        outputStyle: "expanded"
+        //добавляем разные характеристики, например, чтобы файл не был сжатым
+      })
+    )
+    .pipe(autoprefixer({
+      overrideBrowserslist: ["last 5 versions"],
+      cascade: true
+    }))
+    .pipe(dest(path.build.css))
+    .pipe(group_media()
+    ) 
+    .pipe(clean_css())
+    .pipe(rename(
+      {extname:".min.css"}))
+    .pipe(dest(path.build.css))
+    .pipe(browsersync.stream())
+  }
+  //создаем функцию для стилей
+  // пока это нам даст банальное копирование папки css в папку dist
 
   function watchFiles (params) {
     gulp.watch([path.watch.html],html)
+    gulp.watch([path.watch.css],css)
+    gulp.watch([path.watch.js],js)
   }
   //создаем новую функцию для того чтобы изменения были видны в режиме реального времени
-  let build = gulp.series(html)
+
+  function clean(params) {
+    return del(path.clean);
+
+  }
+  //создадим функцию которая будет удалять папку (какую?) судя по всему папку dist
+
+  let build = gulp.series(clean,gulp.parallel(js, css, html))
   // потом включаем build в переменную watch
   //затем нужно подружить её с gulp через exports
+  // добавляем (подключаем) нашу функцию в bild
 
   let watch=gulp.parallel(build,watchFiles,browserSync);
 
+  exports.js = js;
+  exports.css = css;
   exports.html = html;
   exports.build = build;
   exports.watch = watch;
